@@ -1,0 +1,321 @@
+Design Patterns com Java: Dos Clássicos (GoF) ao Spring Framework
+Os padrões de design (Design Patterns) são soluções generalizadas para problemas recorrentes de design de software. Eles oferecem uma forma de reutilizar boas práticas, facilitando a manutenção e a evolução do código. Vou apresentar alguns dos padrões clássicos do GoF (Gang of Four) e como eles se integram no contexto do Spring Framework em Java.
+
+### 1. **Padrões de Design Clássicos (GoF)**
+
+Os padrões do GoF são classificados em três categorias: **Criacionais**, **Estruturais** e **Comportamentais**.
+
+#### 1.1 **Padrões Criacionais**
+
+##### 1.1.1 **Singleton**
+Garante que uma classe tenha apenas uma instância e fornece um ponto global de acesso a ela.
+
+**Exemplo em Java:**
+
+```java
+public class Singleton {
+    private static Singleton instanciaUnica;
+
+    private Singleton() { }
+
+    public static Singleton getInstancia() {
+        if (instanciaUnica == null) {
+            instanciaUnica = new Singleton();
+        }
+        return instanciaUnica;
+    }
+}
+```
+
+##### 1.1.2 **Factory Method**
+Define uma interface para criar objetos, mas deixa as subclasses decidirem qual classe instanciar. Permite que uma classe delegue a responsabilidade de criação a subclasses.
+
+**Exemplo em Java:**
+
+```java
+public abstract class Produto {
+    public abstract void usar();
+}
+
+public class ProdutoConcretoA extends Produto {
+    @Override
+    public void usar() {
+        System.out.println("Usando Produto Concreto A");
+    }
+}
+
+public abstract class Criador {
+    public abstract Produto criarProduto();
+}
+
+public class CriadorConcreto extends Criador {
+    @Override
+    public Produto criarProduto() {
+        return new ProdutoConcretoA();
+    }
+}
+```
+
+#### 1.2 **Padrões Estruturais**
+
+##### 1.2.1 **Adapter**
+Permite que classes com interfaces incompatíveis trabalhem juntas, convertendo a interface de uma classe em outra que o cliente espera.
+
+**Exemplo em Java:**
+
+```java
+public interface TomadaAmericana {
+    void conectar();
+}
+
+public class TomadaEuropeia {
+    public void conectarEuropeu() {
+        System.out.println("Conectado na Tomada Europeia");
+    }
+}
+
+public class AdapterTomada implements TomadaAmericana {
+    private TomadaEuropeia tomadaEuropeia;
+
+    public AdapterTomada(TomadaEuropeia tomadaEuropeia) {
+        this.tomadaEuropeia = tomadaEuropeia;
+    }
+
+    @Override
+    public void conectar() {
+        tomadaEuropeia.conectarEuropeu();
+    }
+}
+```
+
+##### 1.2.2 **Facade**
+Fornece uma interface simplificada para um subsistema complexo, escondendo as complexidades internas.
+
+**Exemplo em Java:**
+
+```java
+public class SistemaAudio {
+    public void ligar() {
+        System.out.println("Áudio ligado");
+    }
+
+    public void desligar() {
+        System.out.println("Áudio desligado");
+    }
+}
+
+public class SistemaVideo {
+    public void ligar() {
+        System.out.println("Vídeo ligado");
+    }
+
+    public void desligar() {
+        System.out.println("Vídeo desligado");
+    }
+}
+
+public class HomeTheaterFacade {
+    private SistemaAudio audio;
+    private SistemaVideo video;
+
+    public HomeTheaterFacade(SistemaAudio audio, SistemaVideo video) {
+        this.audio = audio;
+        this.video = video;
+    }
+
+    public void ligarTudo() {
+        audio.ligar();
+        video.ligar();
+    }
+
+    public void desligarTudo() {
+        audio.desligar();
+        video.desligar();
+    }
+}
+```
+
+#### 1.3 **Padrões Comportamentais**
+
+##### 1.3.1 **Observer**
+Define uma dependência um-para-muitos entre objetos, de forma que quando um objeto muda de estado, todos os seus dependentes são notificados e atualizados automaticamente.
+
+**Exemplo em Java:**
+
+```java
+import java.util.ArrayList;
+import java.util.List;
+
+public interface Observer {
+    void atualizar(String mensagem);
+}
+
+public class ConcreteObserver implements Observer {
+    private String nome;
+
+    public ConcreteObserver(String nome) {
+        this.nome = nome;
+    }
+
+    @Override
+    public void atualizar(String mensagem) {
+        System.out.println(nome + " recebeu a mensagem: " + mensagem);
+    }
+}
+
+public class Subject {
+    private List<Observer> observadores = new ArrayList<>();
+
+    public void adicionarObservador(Observer observador) {
+        observadores.add(observador);
+    }
+
+    public void notificarObservadores(String mensagem) {
+        for (Observer observador : observadores) {
+            observador.atualizar(mensagem);
+        }
+    }
+}
+```
+
+##### 1.3.2 **Strategy**
+Define uma família de algoritmos, encapsula cada um deles, e os torna intercambiáveis. Permite que o algoritmo mude independentemente dos clientes que o utilizam.
+
+**Exemplo em Java:**
+
+```java
+public interface Comportamento {
+    void mover();
+}
+
+public class ComportamentoAgressivo implements Comportamento {
+    @Override
+    public void mover() {
+        System.out.println("Movendo-se agressivamente");
+    }
+}
+
+public class ComportamentoNormal implements Comportamento {
+    @Override
+    public void mover() {
+        System.out.println("Movendo-se normalmente");
+    }
+}
+
+public class Robo {
+    private Comportamento comportamento;
+
+    public void setComportamento(Comportamento comportamento) {
+        this.comportamento = comportamento;
+    }
+
+    public void mover() {
+        comportamento.mover();
+    }
+}
+```
+
+### 2. **Padrões de Design no Spring Framework**
+
+O Spring Framework utiliza e facilita a implementação de vários padrões de design. Vamos ver como alguns dos padrões GoF são aplicados ou aprimorados no Spring.
+
+#### 2.1 **Singleton no Spring**
+No Spring, os beans são por padrão singletons, ou seja, apenas uma instância do bean é criada e gerenciada pelo contêiner Spring.
+
+```java
+@Component
+public class MeuBean {
+    // Este bean será um singleton por padrão
+}
+```
+
+#### 2.2 **Factory Method no Spring**
+Spring permite a definição de métodos de fábrica para criar beans. Esse padrão é muito utilizado no `BeanFactory` e em `ApplicationContext`.
+
+```java
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public Produto produto() {
+        return new ProdutoConcretoA();
+    }
+}
+```
+
+#### 2.3 **Dependency Injection e Inversion of Control (IoC)**
+Embora não seja um padrão GoF, IoC é um dos princípios centrais do Spring e envolve o uso de padrões como `Factory Method`, `Service Locator`, e `Dependency Injection`.
+
+```java
+@Component
+public class MeuServico {
+    private final MeuRepositorio repositorio;
+
+    @Autowired
+    public MeuServico(MeuRepositorio repositorio) {
+        this.repositorio = repositorio;
+    }
+
+    // O Spring injeta a dependência
+}
+```
+
+#### 2.4 **Proxy no Spring**
+Spring AOP (Aspect-Oriented Programming) usa o padrão Proxy para adicionar comportamento adicional aos objetos, como logging, transações, etc.
+
+```java
+@Aspect
+@Component
+public class LogAspect {
+
+    @Before("execution(* pacote.servico.*.*(..))")
+    public void logAntes(JoinPoint joinPoint) {
+        System.out.println("Método: " + joinPoint.getSignature().getName());
+    }
+}
+```
+
+#### 2.5 **Template Method no Spring**
+Spring fornece classes como `JdbcTemplate`, `RestTemplate`, e `JpaTemplate` que seguem o padrão Template Method, permitindo que você execute operações comuns com flexibilidade para alterar partes específicas do algoritmo.
+
+```java
+public class MeuTemplate {
+    public final void executar() {
+        conectar();
+        processar();
+        desconectar();
+    }
+
+    protected void conectar() {
+        System.out.println("Conectando...");
+    }
+
+    protected void desconectar() {
+        System.out.println("Desconectando...");
+    }
+
+    protected abstract void processar();
+}
+```
+
+#### 2.6 **Observer no Spring**
+O padrão Observer pode ser implementado usando os `ApplicationEvent` e `ApplicationListener` do Spring.
+
+```java
+public class MeuEvento extends ApplicationEvent {
+    public MeuEvento(Object source) {
+        super(source);
+    }
+}
+
+@Component
+public class MeuListener implements ApplicationListener<MeuEvento> {
+    @Override
+    public void onApplicationEvent(MeuEvento evento) {
+        System.out.println("Evento recebido: " + evento);
+    }
+}
+```
+
+### 3. **Conclusão**
+Os padrões de design são fundamentais para a construção de sistemas flexíveis, reutilizáveis e mantíveis. O Spring Framework aproveita esses padrões e fornece abstrações poderosas para facilitar seu uso. A compreensão desses padrões no contexto do Spring é essencial para o desenvolvimento eficaz de aplicações robustas em Java.
